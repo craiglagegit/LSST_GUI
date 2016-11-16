@@ -1,0 +1,30 @@
+# This file recognizes USB devices for the LSST_GUI system 
+# See udev(7) for syntax.
+#
+# Craig Lage 11-Aug-15
+# Added Lakeshore 335: 1-Dec-15
+# Added BK Precision 9184: 21-Jan-16
+# Updated ATTRS to make unique: 10-Feb-16
+# Added Sciintech shutter and modified dylos to make things unique: ~1-Jun-16
+# Added Phidgets: 16-Jun-16
+# Added second Phidgest: 14-Sep-16
+
+SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="06c2", ATTRS{idProduct}=="0081", MODE="666", OWNER="lsst"
+SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="06c2", ATTRS{idProduct}=="0045", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{interface}=="Model 335 Temperature Controller", SYMLINK+="lakeshore_335", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{serial}=="FTXQ4NL3", SYMLINK+="dylos", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{serial}=="FTXQ731B", SYMLINK+="sciintech_shutter", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{manufacturer}=="Prolific Technology Inc. ", SYMLINK+="stage_control", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{interface}=="ACTON RESEARCH CONTROLLER",  SYMLINK+="monochromator", MODE="666", OWNER="lsst"
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", ACTION=="add", ATTRS{interface}=="CP2102 USB to UART Bridge Controller", SYMLINK+="bk_precision_9184", MODE="666", OWNER="lsst"
+
+# The following are old rules with less than desirable syntax - leaving for historical purposes.
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idProduct}=="0300", ATTRS{serial}=="LSA15AJ", NAME="ttyUSB5", SYMLINK+="lakeshore_335", MODE="0666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{manufacturer}=="FTDI", ATTRS{serial}=="FTXQ4NL3", NAME="ttyUSB1", SYMLINK+="dylos", MODE="0666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{manufacturer}=="Prolific Technology Inc. ", NAME="ttyUSB3", SYMLINK+="stage_control", MODE="0666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{manufacturer}=="Acton Research", NAME="ttyUSB2", SYMLINK+="monochromator", MODE="0666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", NAME="ttyUSB4", SYMLINK+="bk_precision_9184", MODE="0666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="06c2", ATTRS{idProduct}=="0081",MODE="666", OWNER="lsst"
+#SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="06c2", ATTRS{idProduct}=="0081", SYMLINK+="phidgets" MODE="0666", OWNER="lsst"
+
+

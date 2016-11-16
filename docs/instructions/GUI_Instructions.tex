@@ -1,0 +1,142 @@
+\documentclass{article} % default is 10 pt
+\usepackage{graphicx} % needed for including graphics e.g. EPS, PS
+\usepackage{pdfpages} % needed for including multi-page pdf documents
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage{slashed}
+\long\def\comment#1{}
+
+% uncomment if don't want page numbers
+% \pagestyle{empty}
+
+%set dimensions of columns, gap between columns, and paragraph indent 
+\setlength{\textheight}{8.75in}
+%\setlength{\columnsep}{0.375in}
+\setlength{\textwidth}{6.8in}
+\setlength{\topmargin}{0.0625in}
+\setlength{\headheight}{0.0in}
+\setlength{\headsep}{0.0in}
+\setlength{\oddsidemargin}{-.19in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.12in}
+\makeatletter
+\def\@normalsize{\@setsize\normalsize{10pt}\xpt\@xpt
+\abovedisplayskip 10pt plus2pt minus5pt\belowdisplayskip 
+\abovedisplayskip \abovedisplayshortskip \z@ 
+plus3pt\belowdisplayshortskip 6pt plus3pt 
+minus3pt\let\@listi\@listI}
+
+%need an 11 pt font size for subsection and abstract headings 
+\def\subsize{\@setsize\subsize{12pt}\xipt\@xipt}
+%make section titles bold and 12 point, 2 blank lines before, 1 after
+\def\section{\@startsection {section}{1}{\z@}{1.0ex plus
+1ex minus .2ex}{.2ex plus .2ex}{\large\bf}}
+%make subsection titles bold and 11 point, 1 blank line before, 1 after
+\def\subsection{\@startsection 
+   {subsection}{2}{\z@}{.2ex plus 1ex} {.2ex plus .2ex}{\subsize\bf}}
+\makeatother
+
+\begin{document}
+
+\title{\bf Instructions for the LSST GUI software}
+\author{Craig Lage\\cslage@ucdavis.edu\\845-240-8860}
+\maketitle
+\section{Introduction}
+This software generates a Graphical User Interface (GUI) for controlling the UC Davis LSST Optical simulator.  the code allows one to control the following hardware:
+\begin{itemize}
+  \item The CCD controller that talks to the CCD.  This controller applies the needed DC voltages and clock signals to the CCD, and reads out the data from the CCD. 
+  \item The Illuminating Sphere that controls the light which illuminates the mask, which is imaged onto the CCD by the Optical Simulator lens system. 
+  \item The XYZ Stage that controls motion of the CCD in three axes.
+  \item The Lakeshore temperature controller, which monitors the temperature of the Dewar and the CCD.  At present the Lakeshore is in ``read only mode''.  The GUI can read the temperatures, but changes to the temperature control are made from the Lakeshore front panel.
+    \item The interface to ds9, which is used to review the images.  
+\end{itemize}
+
+The following instructions assume that the user is familiar with the Unix operating system. 
+
+
+\section{Launching the Software}
+To launch the software and prepare for taking images, do the following:
+\begin{itemize}
+  \item Open a terminal window, and navigate to /sandbox/lsst/lsst/GUI
+  \item Type python LSST\_GUI.py\&  This launches the python application. A window with the GUI should appear.
+  \item Next, to initiate communications between the software and the various pieces of hardware, click the button in the upper right labeled ``Start All Communications''.  After several seconds, each communication link will report its status within the ``Communications Status'' frame.  All of the status indicators should read, ``True''.  If any do not, stop and identify the problem before proceeding. 
+  \item Next, to start up the CCD controller, click the button at the top of the ``Camera Control'' frame labeled ``STA 3800 Setup''.  This will start up the CCD controller and initiate all of the various voltages.  DO NOT click any of the ``Back Bias'' buttons (``Back Bias On'', ``Back Bias Off'', ``Back Bias On Confirm'') unless you are certain of what you are doing.  If the back bias voltage and the other CCD voltages are brought up or removed in the wrong order, the CCD can be damaged.  For normal operation, the ``STA 3800 Setup'', which brings up all of the volatges in the correct order, should be all that is required.
+  \item You should now be ready to take images.
+\end{itemize}
+
+\section{Taking an Image}
+\begin{itemize}
+  \item First, enter the Sensor ID, Filter, Test Type, Image Type, and Exposure Time in the appropriate fields.  Enter the sequence number for the image you are about to take.  Since each image has a time stamp applied, duplicating sequence numbers will not over-write images, it just causes confusion.
+  \item To set the light intensity, first click the ``Light On'' button.  You will also need to ensure that the light power supply, located under the Optical Simulator bench, is turned on.  You can adjust the light intensity by entering a percentage in the box and clicking ``Set Light Intensity (\%)''.  Changing the light intensity requires a shutter to move in the Illuminating Sphere module, which takes about 10 seconds.  After the light intensity has been set, the Diode Current will read the monitor diode current.  The current when the light is off is typically about 10 pA, and increases to about 40 nA at 100\% intensity.  For flats, you will typically want the light intensity to be under 10\% for a 1 second exposure, while spot images will typically require intensities of 10\% to 50\% for a 1 second exposure.
+  \item After these steps, you should be ready to take an image.  Clicking ``Expose'' will initiate taking the image, after which you can monitor the progress in the ``StdOut'' window.  After the message ``FITS file conversion done'', the image will be placed in the /sandbox/lsst/lsst/GUI/testdata folder, and is available for viewing.
+\end{itemize}
+
+\section{Analyzing images}
+\begin{itemize}
+  \item Detailed image analysis will require stand alone software beyond the scope of the GUI code.  However, some simple image analysis steps are coded in the ``Data Analysis'' frame in the lower right corner.  Instructions for these follow.
+  \item Clicking the ``Show Frame'' button will launch ds9 if it is not already open, and send the most recent image to the ds9 window.
+  \item Clicking ``Perform Overscan Subtraction'' or ``Perform Overscan and Crosstalk Subtraction'' will perform these operations on the most recent image.  If the most recent image is named XXX.fits, the overscan subtracted image will be named XXX\_ov.fits, and the overscan and crosstalk subtracted image will be named XXX\_ov\_ct.fits. After one of these operations, clicking ``Show Frame'' will send the new image to the ds9 window.
+  \item The other buttons in the ``Data Analysis'' frame are experimental and have not been tested in a while, but feel free to give them a try.
+\end{itemize}
+
+\section{Moving the Stage}
+\begin{itemize}
+  \item It is typically necessary to move the CCD in all three axes to move and focus the image.  This is accomplished in the ``Stage Control'' frame.
+  \item When the GUI is launched, or after clicking the ``Re-Initialize Encoders'' button, all of the stage location indicators will be reset to 0 microns.  Thus, it is important to realize that these readings are relative readings and are not absolutely calibrated.
+  \item Another important point is that the motion commands that are entered in the left hand (white) boxes are in stepper motor steps, and the stage location readings in the right hand (gray) boxes are in microns, with each stepper motor step representing 2.5 microns.  Thus, if you enter 100 in the left hand box and then click ``Move x (relative)'', you should expect the right hand reading to increase by approximately 250 microns.
+  \item It is also important to realize that there is backlash in the drive screws which move the stages, so you should always move in the same direction.  So, for example, if you want to move the Z-stage from -100 to +100 microns in 10 micron steps, you should back the stage up by more than 100 microns.  Typically, you would enter -100 in the Z-stage command window, and click ``Move z(relative)'', which would back the Z-stage up to about -250 microns.  Then you would enter a smaller number such as +10 in the Z-stage command window and click ``Move z(relative)'' mutiple times. You will notice that the first few motions don't change the stage location reading at all, they are just taking up the backlash in the screw.  After 3-4 clicks, the stage will begin to move in the positive direction, and you can adjust the command window until you have arrived at the desired -100 setting.  If you go past where you want to be, you will need to back up and repeat the above procedure.  You are now ready to move in the +Z direction.
+  \item The CCD is rotated 90 degrees with respect to the ds9 image.  A +Y motion will move the ds9 image to the right, and a -Y motion will move the ds9 image to the left.  A +X motion will move the ds9 image up, and a -X motion will move the ds9 image down.
+  \item You should be careful not to move the CCD stage too far in the +Z direction, or you risk driving the CCD stage into the Optical Simulator window.  We have attempted to set the limit switch on the Z-stage in order to prevent this from happening, but it is best to be careful. If you are planning to move the stage more than 500 microns in the +Z direction, you should remove the plastic shroud and make sure that the CCD does not hit the Optical Simulator.
+\end{itemize}
+
+\section{Taking Mutiple Images}
+\begin{itemize}
+  \item The GUI is set up to allow taking multiple images under computer control, while incrementing some parameter between images.  For example, if you want to take multiple images at different Z-locations (useful for setting focus), you would do the following:
+  \begin{itemize}
+      \item Set up the stage position, as described above in the section titled ``Moving the Stage''.
+      \item Enter the number of increments you want, and the number of exposures per increment.
+      \item Choose the increment type (``Z'' in this case).  Options include ``None'', ``X'', ``Y'', and ``Z'' for moving the stage, and Exposure changes in either log or linear steps.
+      \item Choose the increment value. For example, choosing a Z increment value of 4 will move the stage 10 microns per increment.
+      \item Choose the starting sequence number.  Typically we will start a new sequence at a round number, like 400, making it easy to search and find the images associated with the sequence.
+      \item If you add a ``Dither Radius'', then successive exposures within an increment will be dithered in X and Y by a random amount within the dither radius.
+      \item Set the ``Delay before starting'' in seconds.  A delay of 30 seconds allows you to start the sequence, turn out the room light, close the door, and leave the room before the exposure sequence starts.
+  \end{itemize}
+  \item It is easy to intiate an exposure sequence requiring several hours to complete, and then realize that you've made a mistake.  If this happens, click the ``Stop Exposures'' button.  This will stop the sequence after finishing the current exposure.
+\end{itemize}
+
+\section{Making Changes}
+\begin{itemize}
+  \item Many changes can be made from the GUI window, but there are many others (voltages, timing files, ...) which are too complex to incorporate in the GUI window.  There is a file in the /sandbox/lsst/lsst/GUI directory entitled ``UCDavis.cfg'', which controls most of these options.  This file can be edited with a text editor to make changes. After changing this file, clicking the ``STA 3800 Setup'' button will load the changes and allow you to take new images with the resulting changes.  You can watch the progress in the ``StdOut'' window to verify that your changes have taken effect.
+\end{itemize}
+
+\section{Shutting Down}
+\begin{itemize}
+  \item Normally all that is required to shut down operations is to click the close box in the upper left corner of the GUI window.  This will run ``STA 3800 Off'', turn off the light, close the various communications, and close the ds9 window. 
+\end{itemize}
+
+\section{Dewar Temperature Control and Logging}
+A graph which tracks the particle counts inside the Plexiglas enclosure surrounding the optical system, as well as the temperatures inside the Dewar, is posted at the site: \url{http://lage.physics.ucdavis.edu/particles.html}.  The generation of this graph, as well as the automated Dewar LN2 fill, is managed by the Python program: /sandbox/lsst/lsst/particles/Dylos\_cron.py.  This program is launched every 10 minutes by the Unix cron job management software.  The temperature data is logged in the file /sandbox/lsst/lsst/particles/temperature\_log.dat, the particle data is logged in the file /sandbox/lsst/lsst/particles/particle\_log.dat, and the Dewar fill data is logged in the file /sandbox/lsst/lsst/particles/fill\_log.dat.  In addition, there is a file /sandbox/lsst/lsst/particles/dylos.log which logs the events that happen when the cron job runs, which is useful for debugging when things go wrong.
+
+The Dylos\_cron.py code is programmed to fill the Dewar when the temperature in the LN2 reservoir exceeds -194.0 C.  When the Dewar fills with LN2, it generates vibrations, and typically the focus location shifts.  For this reason, it is best not to have a fill occur while you are taking data.  To prevent this, if you see from the temperature graph that a fill will occur within the time frame when you will be taking data, it is best to intiate a manual fill, using the ``Start Dewar Fill'' and ``Stop Dewar Fill'' buttons.  These are totally under manual control, so it is up to you to monitor the completion of the fill and stop the fill when LN2 begins to pour from the Dewar fill opening.  You should also click the ``Log Dewar Fill'' button when the fill is complete so that the fill time is logged and appears on the temperature graph. 
+
+The ``UCDavis.cfg'' file contains the following parameters which control the Dewar autofill routine.  Edit these to make changes:
+
+Dewar\_is\_Cold 1             \# 1 = Autofill enabled; 0 = autofill disabled\\
+Temp\_to\_Fill -194.0 	      \# This is the temp to trigger a fill\\
+Fill\_Time\_Limit 240.0       \# This is the maximum fill time\\
+Overflow\_Temp\_Limit -20.0   \# This is the temp on the overflow monitor that stops the fill
+
+
+\section{Troubleshooting}
+\begin{itemize}
+  \item If the GUI should lock up (rare, but has been known to happen), you will need to kill it from the UNIX command line.  Type ps -u lsst and look for the Python line corresponding to the LSST\_GUI code, find the job number (XXXX), and type kill XXXX.  You can the restart the GUI.
+  \item If there is a communications problem, check if the two Ethernet lines are operational.  The internal connection can be checked using the command ping 192.168.1.100, and the connection to the external internet can be checked by pinging any external site, such as ping www.google.com.  If either of these fail, try bringing them up with the command sudo ifup eth0 and/or sudo ifup eth1.
+
+  \item  Still a problem? Contact Craig Lage at cslage@ucdavis.edu or 845-240-8860.
+\end{itemize}
+
+
+
+
+\end{document}
+
