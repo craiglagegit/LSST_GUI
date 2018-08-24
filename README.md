@@ -15,4 +15,5 @@ Instructions for operating the simulator are in docs/instructions/GUI_Instructio
 
 A screenshot of the code in operation is shown at LSST_GUI_Screenshot_16Nov16.png.
 
+For questions contact Craig Lage at cslage@ucdavis.edu
 
