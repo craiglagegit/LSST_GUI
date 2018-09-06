@@ -45,7 +45,7 @@ print "Shutting Down\n"
 
 try:
     sphere.Final_Light_Off()
-    camera.sta3800_off()
+    camera.ccd_off()
     comm_status.Close_All()
 except Exception as e:
     print "Failure in LSST_GUI shutdown. Exception of type %s and args = \n"%type(e).__name__, e.args    

@@ -25,7 +25,6 @@ warnings.simplefilter("ignore")
 def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, exptime, filter, srcpwr, mondiode, temp_a, temp_b, temp_set, stage_pos=[0.0,0.0,0.0]):
 
     verbose = True   # set to True to make this thing verbose
-    
     # Announce yourself, if being verbose
     if ( verbose == True ) : print 'LSST FITS Header Conformance Tool',' v0.1'
 
@@ -131,7 +130,8 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
     phdr.update('SHUT_DEL', shut_del, '[ms] Shutter Delay', after='EXPTIME')
     phdr.update('CTLRCFG', config_file, 'Controller config file', after='SHUT_DEL')
     phdr.update('FILENAME', infile, 'Original file name', after='CTLRCFG')
-    phdr.update('DETSIZE', '[1:4336,1:4044]', 'NOAO detector size', after='FILENAME')
+    phdr.update('DETSIZE', '[1:4000,1:4000]', 'NOAO detector size', after='FILENAME')
+    # DETSIZE is just a dummy value that will be updated later.
     phdr.update('BINNING', 1, '[pixelX x pixelY] chip binning', after='DETSIZE')
     phdr.update('BINX', 1, '[pixels] binning along X axis', after='BINNING')
     phdr.update('BINY', 1, '[pixels] binning along Y axis', after='BINX')
@@ -147,14 +147,17 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
         phdr.update('PRE_ROWS', 0, 'Prescan rows', after='OVR_COLS')
         phdr.update('IMG_ROWS', 2000, 'Imaging rows', after='PRE_ROWS')
         phdr.update('OVR_ROWS', 22, 'Overscan rows ', after='IMG_ROWS')
+        phdr.update('DETSIZE', '[1:4336,1:4044]', 'NOAO detector size', after='FILENAME')
+
     else :
         if phdr['CCD_MANU'] == 'E2V' :
             phdr.update('PRE_COLS', 10, 'Prescan columns', after='BINY')
             phdr.update('IMG_COLS', 512, 'Imaging columns', after='PRE_COLS')
-            phdr.update('OVR_COLS', 20, 'Overscan columns', after='IMG_COLS')
+            phdr.update('OVR_COLS', 50, 'Overscan columns', after='IMG_COLS')
             phdr.update('PRE_ROWS', 0, 'Prescan rows', after='OVR_COLS')
             phdr.update('IMG_ROWS', 2002, 'Imaging rows', after='PRE_ROWS')
-            phdr.update('OVR_ROWS', 20, 'Overscan rows ', after='IMG_ROWS')
+            phdr.update('OVR_ROWS', 46, 'Overscan rows ', after='IMG_ROWS')
+            phdr.update('DETSIZE', '[1:4096,1:4004]', 'NOAO detector size', after='FILENAME')
         else :
             print "Not ITL or E2V"
             phdr.update('PRE_COLS', 4, 'Prescan columns', after='BINY')
@@ -172,64 +175,122 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
 
     ###########################################################################
     # fix up the various image extensions
-    
-    for i in range(1,17) :
-        imhdr=hdulist[i].header
+    if phdr['CCD_MANU'] == 'ITL' :   
+        for i in range(1,17) :
+            imhdr=hdulist[i].header
 
-        if   i == 8 :  
-            extname = 'SEGMENT10'
-            imhdr.update('DETSEC', '[509:1,1:2000]')
-        elif i == 7 :  
-            extname = 'SEGMENT11'
-            imhdr.update('DETSEC', '[1018:510,1:2000]')
-        elif i == 6 :  
-            extname = 'SEGMENT12'
-            imhdr.update('DETSEC', '[1527:1019,1:2000]')
-        elif i == 5 :  
-            extname = 'SEGMENT13'
-            imhdr.update('DETSEC', '[2036:1528,1:2000]')
-        elif i == 4 :  
-            extname = 'SEGMENT14'
-            imhdr.update('DETSEC', '[2545:2037,1:2000]')
-        elif i == 3 :  
-            extname = 'SEGMENT15'
-            imhdr.update('DETSEC', '[3054:2546,1:2000]')
-        elif i == 2 :  
-            extname = 'SEGMENT16'
-            imhdr.update('DETSEC', '[3563:3055,1:2000]')            
-        elif i == 1 :  
-            extname = 'SEGMENT17'
-            imhdr.update('DETSEC', '[4072:3564,1:2000]')
-        elif i == 9 :  
-            extname = 'SEGMENT07'
-            imhdr.update('DETSEC', '[4072:3564,4000:2001]')
-        elif i == 10 : 
-            extname = 'SEGMENT06'
-            imhdr.update('DETSEC', '[3563:3055,4000:2001]')
-        elif i == 11 : 
-            extname = 'SEGMENT05'
-            imhdr.update('DETSEC', '[3054:2546,4000:2001]')
-        elif i == 12 : 
-            extname = 'SEGMENT04'
-            imhdr.update('DETSEC', '[2545:2037,4000:2001]')
-        elif i == 13 : 
-            extname = 'SEGMENT03'
-            imhdr.update('DETSEC', '[2036:1528,4000:2001]')
-        elif i == 14 : 
-            extname = 'SEGMENT02'
-            imhdr.update('DETSEC', '[1527:1019,4000:2001]')
-        elif i == 15 : 
-            extname = 'SEGMENT01'
-            imhdr.update('DETSEC', '[1018:510,4000:2001]')
-        elif i == 16 : 
-            extname = 'SEGMENT00'
-            imhdr.update('DETSEC', '[509:1,4000:2001]')
-        else: print "Whoops! That's not a valid extension! "
+            if   i == 4 :  
+                extname = 'SEGMENT14'
+                imhdr.update('DETSEC', '[2545:2037,1:2000]')
+            elif i == 3 :  
+                extname = 'SEGMENT15'
+                imhdr.update('DETSEC', '[3054:2546,1:2000]')
+            elif i == 2 :  
+                extname = 'SEGMENT16'
+                imhdr.update('DETSEC', '[3563:3055,1:2000]')            
+            elif i == 1 :  
+                extname = 'SEGMENT17'
+                imhdr.update('DETSEC', '[4072:3564,1:2000]')
+            elif i == 8 :  
+                extname = 'SEGMENT10'
+                imhdr.update('DETSEC', '[509:1,1:2000]')
+            elif i == 7 :  
+                extname = 'SEGMENT11'
+                imhdr.update('DETSEC', '[1018:510,1:2000]')
+            elif i == 6 :  
+                extname = 'SEGMENT12'
+                imhdr.update('DETSEC', '[1527:1019,1:2000]')
+            elif i == 5 :  
+                extname = 'SEGMENT13'
+                imhdr.update('DETSEC', '[2036:1528,1:2000]')
+            elif i == 9 :  
+                extname = 'SEGMENT07'
+                imhdr.update('DETSEC', '[4072:3564,4000:2001]')
+            elif i == 10 : 
+                extname = 'SEGMENT06'
+                imhdr.update('DETSEC', '[3563:3055,4000:2001]')
+            elif i == 11 : 
+                extname = 'SEGMENT05'
+                imhdr.update('DETSEC', '[3054:2546,4000:2001]')
+            elif i == 12 : 
+                extname = 'SEGMENT04'
+                imhdr.update('DETSEC', '[2545:2037,4000:2001]')
+            elif i == 13 : 
+                extname = 'SEGMENT03'
+                imhdr.update('DETSEC', '[2036:1528,4000:2001]')
+            elif i == 14 : 
+                extname = 'SEGMENT02'
+                imhdr.update('DETSEC', '[1527:1019,4000:2001]')
+            elif i == 15 : 
+                extname = 'SEGMENT01'
+                imhdr.update('DETSEC', '[1018:510,4000:2001]')
+            elif i == 16 : 
+                extname = 'SEGMENT00'
+                imhdr.update('DETSEC', '[509:1,4000:2001]')
+            else: print "Whoops! That's not a valid extension! "
+            imhdr.update('DETSIZE', '[1:4072,1:4000]')
+            imhdr.update('DATASEC', '[4:512,1:2000]')
+            imhdr.update('CHANNEL', i, 'channel number', after='BSCALE')    
+            imhdr.update('EXTNAME', extname, 'LSST segment identifier', after='CHANNEL')
 
-        imhdr.update('DETSIZE', '[1:4072,1:4000]')
-        imhdr.update('DATASEC', '[4:512,1:2000]')
-        imhdr.update('CHANNEL', i, 'channel number', after='BSCALE')    
-        imhdr.update('EXTNAME', extname, 'LSST segment identifier', after='CHANNEL')
+
+    elif phdr['CCD_MANU'] == 'E2V' :    
+        for i in range(1,17) :
+            imhdr=hdulist[i].header
+
+            if   i == 1 :  
+                extname = 'SEGMENT10'
+                imhdr.update('DETSEC', '[512:1,4004:2003]')
+            elif i == 2 :  
+                extname = 'SEGMENT11'
+                imhdr.update('DETSEC', '[1024:513,4004:2003]')
+            elif i == 3 :  
+                extname = 'SEGMENT12'
+                imhdr.update('DETSEC', '[1536:1025,4004:2003]')
+            elif i == 4 :  
+                extname = 'SEGMENT13'
+                imhdr.update('DETSEC', '[2048:1537,4004:2003]')
+            elif i == 5 :  
+                extname = 'SEGMENT14'
+                imhdr.update('DETSEC', '[2560:2049,4004:2003]')
+            elif i == 6 :  
+                extname = 'SEGMENT15'
+                imhdr.update('DETSEC', '[3072:2561,4004:2003]')
+            elif i == 7 :  
+                extname = 'SEGMENT16'
+                imhdr.update('DETSEC', '[3584:3073,4004:2003]')            
+            elif i == 8 :  
+                extname = 'SEGMENT17'
+                imhdr.update('DETSEC', '[4096:3585,4004:2003]')
+            elif i == 9 :  
+                extname = 'SEGMENT07'
+                imhdr.update('DETSEC', '[3585:4096,1:2002]')
+            elif i == 10 : 
+                extname = 'SEGMENT06'
+                imhdr.update('DETSEC', '[3073:3584,1:2002]')
+            elif i == 11 : 
+                extname = 'SEGMENT05'
+                imhdr.update('DETSEC', '[2561:3072,1:2002]')
+            elif i == 12 : 
+                extname = 'SEGMENT04'
+                imhdr.update('DETSEC', '[2049:2560,1:2002]')
+            elif i == 13 : 
+                extname = 'SEGMENT03'
+                imhdr.update('DETSEC', '[1537:2048,1:2002]')
+            elif i == 14 : 
+                extname = 'SEGMENT02'
+                imhdr.update('DETSEC', '[1025:1536,1:2002]')
+            elif i == 15 : 
+                extname = 'SEGMENT01'
+                imhdr.update('DETSEC', '[513:1024,1:2002]')
+            elif i == 16 : 
+                extname = 'SEGMENT00'
+                imhdr.update('DETSEC', '[1:512,1:2002]')
+            else: print "Whoops! That's not a valid extension! "
+            imhdr.update('DETSIZE', '[1:4096,1:4004]')
+            imhdr.update('DATASEC', '[11:522,1:2002]')
+            imhdr.update('CHANNEL', i, 'channel number', after='BSCALE')    
+            imhdr.update('EXTNAME', extname, 'LSST segment identifier', after='CHANNEL')
 
         data = np.array(hdulist[i].data + 32768, dtype = np.int16)
         # Data is stored as unsigned 16 bit integers, so we need to apply this transformation

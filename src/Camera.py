@@ -31,6 +31,10 @@ class Camera(object):
             return
         self.edtsaodir = eolib.getCfgVal(self.CfgFile,"EDTSAO_DIR")
         self.EDTdir = eolib.getCfgVal(self.CfgFile,"EDT_DIR")
+        self.vendor = eolib.getCfgVal(self.CfgFile,"CCD_MANU").strip()
+        if not (self.vendor == "ITL" or self.vendor == "E2V"):
+            print "Vendor not recognized.  Exiting."
+            sys.exit()
         self.fitsfilename = "dummy.fits" # Just a dummy - not really used
         self.relay = InterfaceKit()
         return
@@ -41,16 +45,16 @@ class Camera(object):
             self.voltage_lookup = [  # Lookup table with voltage values
                 {"Name":"VCLK_LO",    "Value": float(eolib.getCfgVal(self.CfgFile,"VCLK_LO")),    "Vmin":  0.0, "Vmax": 10.0, "chan":["a0188"]},
                 {"Name":"VCLK_HI",    "Value": float(eolib.getCfgVal(self.CfgFile,"VCLK_HI")),    "Vmin":  0.0, "Vmax": 10.0, "chan":["a0080"]},
-                {"Name":"VV4",        "Value": float(eolib.getCfgVal(self.CfgFile,"VV4")),        "Vmin":-10.0, "Vmax":  0.0, "chan":["a0280"]},
+                {"Name":"VV4",        "Value": float(eolib.getCfgVal(self.CfgFile,"VV4")),        "Vmin": -5.0, "Vmax":  5.0, "chan":["a0280"]},
                 {"Name":"VDD",        "Value": float(eolib.getCfgVal(self.CfgFile,"VDD")),        "Vmin":  0.0, "Vmax": 30.0, "chan":["a0380"]},
                 {"Name":"VRD",        "Value": float(eolib.getCfgVal(self.CfgFile,"VRD")),        "Vmin":  0.0, "Vmax": 20.0, "chan":["a0384"]},
                 {"Name":"VOD",        "Value": float(eolib.getCfgVal(self.CfgFile,"VOD")),        "Vmin":  0.0, "Vmax": 30.0, "chan":["a0388","a038c"]},
-                {"Name":"VOG",        "Value": float(eolib.getCfgVal(self.CfgFile,"VOG")),        "Vmin": -5.0, "Vmax":  0.0, "chan":["a0288","a028c"]},
+                {"Name":"VOG",        "Value": float(eolib.getCfgVal(self.CfgFile,"VOG")),        "Vmin": -5.0, "Vmax":  5.0, "chan":["a0288","a028c"]},
                 {"Name":"PAR_CLK_LO", "Value": float(eolib.getCfgVal(self.CfgFile,"PAR_CLK_LO")), "Vmin":-10.0, "Vmax":  0.0, "chan":["a0184"]},
                 {"Name":"PAR_CLK_HI", "Value": float(eolib.getCfgVal(self.CfgFile,"PAR_CLK_HI")), "Vmin":  0.0, "Vmax": 10.0, "chan":["a0084"]},
                 {"Name":"SER_CLK_LO", "Value": float(eolib.getCfgVal(self.CfgFile,"SER_CLK_LO")), "Vmin":-10.0, "Vmax":  0.0, "chan":["a0180"]},
                 {"Name":"SER_CLK_HI", "Value": float(eolib.getCfgVal(self.CfgFile,"SER_CLK_HI")), "Vmin":  0.0, "Vmax": 10.0, "chan":["a008c"]},
-                {"Name":"RG_LO",      "Value": float(eolib.getCfgVal(self.CfgFile,"RG_LO")),      "Vmin":-10.0, "Vmax":  3.0, "chan":["a018c"]},
+                {"Name":"RG_LO",      "Value": float(eolib.getCfgVal(self.CfgFile,"RG_LO")),      "Vmin":-10.0, "Vmax":  0.0, "chan":["a018c"]},
                 {"Name":"RG_HI",      "Value": float(eolib.getCfgVal(self.CfgFile,"RG_HI")),      "Vmin":  0.0, "Vmax": 10.0, "chan":["a0088"]}]
             self.vbb = float(eolib.getCfgVal(self.CfgFile,"BSS_TEST"))
         except Exception as e:
@@ -256,8 +260,11 @@ class Camera(object):
                     self.sequence_num_ent.insert(0,"%03d"%seq_num)
                     exptime = self.time_ent.get()
                     if dither_radius > 0 and num_per_increment > 1:
-                        x_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
-                        y_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #x_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #y_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #self.stage.set_pos = [x_dither, y_dither, 0]
+                        x_dither = int(dither_radius)
+                        y_dither = 0.0
                         self.stage.set_pos = [x_dither, y_dither, 0]
                         self.stage.Move_Stage()
                         self.stage.Read_Encoders()
@@ -282,8 +289,11 @@ class Camera(object):
                     self.sequence_num_ent.insert(0,"%03d"%seq_num)
                     exptime = self.time_ent.get()
                     if dither_radius > 0 and num_per_increment > 1:
-                        x_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
-                        y_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #x_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #y_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
+                        #self.stage.set_pos = [x_dither, y_dither, 0]
+                        x_dither = int(dither_radius)
+                        y_dither = 0.0
                         self.stage.set_pos = [x_dither, y_dither, 0]
                         self.stage.Move_Stage()
                         self.stage.Read_Encoders()
@@ -298,17 +308,61 @@ class Camera(object):
                 # Exposure time increments in linear steps
                 self.time_ent.delete(0,END)
                 self.time_ent.insert(0,str(float(increment_value) + float(exptime)))
+
+        elif increment_type == "Cooling Curve":
+            Starting_Temp = 20.0
+            Final_Temp = -100.0
+            Target_Temps = numpy.linspace(Starting_Temp, Final_Temp, numinc)
+            self.lakeshore.Read_Temp()
+
+            for exposure_counter in range(numinc):
+                Target_Temp = Target_Temps[exposure_counter]
+                # Wait until it cools to the target level
+                while self.lakeshore.Temp_B > Target_Temp:
+                    self.master.update()
+                    if self.stop_exposures:
+                        print "Stopping Exposures based on user input"
+                        self.master.update()
+                        self.stop_exposures = False
+                        return
+                    self.lakeshore.Read_Temp()
+                    time.sleep(5.0)                   
+
+                # First take num_per_increment - 1 bias frames, then 1 dark
+                for sub_counter in range(num_per_increment - 1):
+                    seq_num = start_sequence_num + num_per_increment * exposure_counter + sub_counter
+                    self.sequence_num_ent.delete(0,END)
+                    self.sequence_num_ent.insert(0,"%03d"%seq_num)
+                    self.image_type.set("bias")
+                    if self.stop_exposures:
+                        print "Stopping Exposures based on user input"
+                        self.master.update()
+                        self.stop_exposures = False
+                        return
+                    else:
+                        self.Expose()
+                seq_num = start_sequence_num + num_per_increment * exposure_counter + num_per_increment - 1
+                self.sequence_num_ent.delete(0,END)
+                self.sequence_num_ent.insert(0,"%03d"%seq_num)
+                self.image_type.set("dark")
+                if self.stop_exposures:
+                    print "Stopping Exposures based on user input"
+                    self.master.update()
+                    self.stop_exposures = False
+                    return
+                else:
+                    self.Expose()
 		
         elif increment_type == "Light Intensity":
             for exposure_counter in range(numinc):
+                self.sphere.light_intensity=float(self.sphere.light_intensity_ent.get())
+                self.sphere.VA_Set_Light_Intensity(self.sphere.light_intensity)
+                time.sleep(10)
+                self.sphere.Read_Photodiode()
                 for sub_counter in range(num_per_increment):
                     seq_num = start_sequence_num + num_per_increment * exposure_counter + sub_counter
                     self.sequence_num_ent.delete(0,END)
                     self.sequence_num_ent.insert(0,"%03d"%seq_num)
-                    self.sphere.light_intensity=float(self.sphere.light_intensity_ent.get())
-                    self.sphere.VA_Set_Light_Intensity(self.sphere.light_intensity)
-                    time.sleep(10)
-                    self.sphere.GUI_Read_Photodiode(0.3)
                     if dither_radius > 0 and num_per_increment > 1:
                         x_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
                         y_dither = int(dither_radius * (-1.0 + 2.0 * numpy.random.rand()))
@@ -418,9 +472,9 @@ class Camera(object):
         frame_title = Label(self.frame,text="Camera Control",relief=RAISED,bd=2,width=24, bg="light yellow",font=("Times", 16))
         frame_title.grid(row=0, column=1)
 
-        setup_but = Button(self.frame, text="STA 3800 Setup", width=16,command=self.sta3800_setup)
+        setup_but = Button(self.frame, text="CCD Setup", width=16,command=self.ccd_setup)
         setup_but.grid(row=0,column=2)
-        off_but = Button(self.frame, text="STA 3800 Off", width=16,command=self.sta3800_off)
+        off_but = Button(self.frame, text="CCD Off", width=16,command=self.ccd_off)
         off_but.grid(row=0,column=3)
         bias_but_on = Button(self.frame, text="BackBias On", width=12,command=self.bbias_on_button)
         bias_but_on.grid(row=1,column=2)
@@ -435,7 +489,7 @@ class Camera(object):
 
         self.filter = StringVar()
         self.filter.set("R")
-        filter_type = OptionMenu(self.frame, self.filter, "U", "G", "R", "I", "Z", "Y")
+        filter_type = OptionMenu(self.frame, self.filter, "u", "g", "r", "i", "z", "y")
         filter_type.grid(row=0, column = 0)
         filter_title = Label(self.frame,text="FILTER",relief=RAISED,bd=2,width=12)
         filter_title.grid(row=1, column=0)
@@ -450,7 +504,7 @@ class Camera(object):
         self.sensor_id_ent = Entry(self.frame, justify="center", width=12)
         self.sensor_id_ent.grid(row=4,column=0)
         self.sensor_id_ent.focus_set()
-        self.sensor_id_ent.insert(0,'ITL-3800C-029')
+        self.sensor_id_ent.insert(0,"E2V")
         sensor_id_title = Label(self.frame,text="Sensor_ID",relief=RAISED,bd=2,width=16)
         sensor_id_title.grid(row=5, column=0)
 
@@ -515,7 +569,7 @@ class Camera(object):
         self.increment_type.set("None")
         self.increment_type = StringVar()
         self.increment_type.set("")
-        increment_type = OptionMenu(self.frame, self.increment_type, "None", "X", "Y", "Z", "Exp(Log)", "Exp(Linear)", "V-curve (Linear)", "Light Intensity")
+        increment_type = OptionMenu(self.frame, self.increment_type, "None", "X", "Y", "Z", "Exp(Log)", "Exp(Linear)", "V-curve (Linear)", "Light Intensity", "Cooling Curve")
         increment_type.grid(row=7, column = 2)
         increment_type_title = Label(self.frame,text="Increment Type",relief=RAISED,bd=2,width=12)
         increment_type_title.grid(row=8, column=2)
@@ -609,7 +663,7 @@ class Camera(object):
         # It requires confirmation so as not to damage the device.
         if self.bbias_on_confirm_ent.get() != 'Y':
             print "The device can be damaged if backbias is connected before power up."
-            print "Make certain that you have run sta3800_setup before bbias_on."
+            print "Make certain that you have run ccd_setup before bbias_on."
             print "If you are certain, enter 'Y' in the confirm box"
             print "Not connecting bbias. BSS is still off.\n"
             self.master.update()
@@ -668,7 +722,7 @@ class Camera(object):
         self.runcmd([self.edtsaodir+"/edtwriten", "-c", "33400000"]) # ad board #4 gray scale off
 
         # Set the system gain to high
-        # Note that this gets over-ridden in sta3800_setup.
+        # Note that this gets over-ridden in ccd_setup.
         self.gain("HIGH")
 
         # Set unidirectional mode
@@ -679,11 +733,11 @@ class Camera(object):
         print "Setting CCD serial register shifts to split mode\n"
         self.runcmd([self.edtsaodir+"/edtwriten", "-c", "41000001"]) # split on   
 
-        self.sta3800_channels()
+        self.ccd_channels()
 
         print "Setting default ADC offsets\n"
 
-        self.sta3800_offsets()
+        self.ccd_offsets()
         self.Check_Communications()
         print "16ch_setup Done.\n"
         self.master.update()
@@ -708,9 +762,10 @@ class Camera(object):
         #print "After edtwriteblk, time = ",time.time()
         self.runcmd([self.edtsaodir+"/expose", str(exptime)])            # do the exposure
         #print "After expose, time = ",time.time()
-        time.sleep(1.0)
+        time.sleep(1.0)   # delay for shutter to close all the way?
         #print "Before image16, time = ",time.time()
         self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16"]) # readout
+        #self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16", "-t", "140000"]) # readout  Allows increased timeout for very slow parallel clock delays
         #print "After image16, time = ",time.time()
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", FlushFile])       # load the signal file to re-start parallel flushing
         #print "After edtwriteblk, time = ",time.time()
@@ -736,25 +791,25 @@ class Camera(object):
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", FlushFile])       # load the signal file to re-start parallel flushing
         return
 
-    def sta3800_setup(self):
+    def ccd_setup(self):
         """Python version of the sta3800_setup script"""
         self.GetVoltageLookup()
         self.sixteen_ch_setup()
-        print "Setting up STA3800 ...\n"
+        print "Setting up CCD ...\n"
         self.master.update()
-        self.sta3800_timing()
-        self.sta3800_channels()
-        self.sta3800_volts()
-        self.sta3800_offsets()
+        self.ccd_timing()
+        self.ccd_channels()
+        self.ccd_volts()
+        self.ccd_offsets()
         gain = eolib.getCfgVal(self.CfgFile,"GAIN_MODE")
         self.gain(gain)
-        print "sta3800_setup done.\n"
+        print "ccd_setup done.\n"
         self.master.update()
         return
 
-    def sta3800_off(self):
+    def ccd_off(self):
         """Python version of the sta3800_off script"""
-        print"Powering down the sta3800 device...\n"
+        print"Powering down the ccd device...\n"
         self.GetVoltageLookup()
         self.bbias_off()
         time.sleep(0.5)
@@ -780,7 +835,7 @@ class Camera(object):
                 #print "Set Voltage %s to %.2f volts: at ADC channel %s DAC setting %03x"%(name,value,chan,DACval)
                 print "Set Voltage %s to %.2f volts"%(name,value)
             time.sleep(0.1)
-        print "sta3800_off done.\n"
+        print "ccd_off done.\n"
         return
 
     def gain(self, value):
@@ -797,9 +852,9 @@ class Camera(object):
         self.master.update()
         return
 
-    def sta3800_timing(self):
+    def ccd_timing(self):
         """Python version of the sta3800_timing script"""
-        print "Setting up STA3800 default timing...\n"
+        print "Setting up CCD default timing...\n"
         Par_Clk_Delay = int(eolib.getCfgVal(self.CfgFile,"PAR_CLK_DELAY"))
         print "Setting parallel clock delay to %d\n"%Par_Clk_Delay
         self.master.update()
@@ -807,7 +862,7 @@ class Camera(object):
 
         SigBFile = eolib.getCfgVal(self.CfgFile,"TIM_FILE")
         if not self.CheckIfFileExists(SigBFile):
-            print "Signal file not found.  May need to run Perl conversion routine. Exiting sta3800_timing"
+            print "Signal file not found.  May need to run Perl conversion routine. Exiting ccd_timing"
             return
         print "Loading serial readout signal file %s\n"%SigBFile
         self.master.update()
@@ -815,18 +870,18 @@ class Camera(object):
 
         PatBFile = eolib.getCfgVal(self.CfgFile,"PAT_FILE")
         if not self.CheckIfFileExists(PatBFile):
-            print "Pattern file not found.  May need to run Perl conversion routine. Exiting sta3800_timing"
+            print "Pattern file not found.  May need to run Perl conversion routine. Exiting ccd_timing"
             self.master.update()
             return
         print "Loading default pattern file %s\n"%PatBFile
         self.master.update()
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", PatBFile])     # load the pattern file
-        print "sta3800_timing done.\n"
+        print "ccd_timing done.\n"
         self.master.update()
         return
 
 
-    def sta3800_offsets(self):
+    def ccd_offsets(self):
         """Python version of the sta3800_offsets script"""
 
         self.GetOffsetLookup()         
@@ -848,13 +903,13 @@ class Camera(object):
             self.runcmd([self.edtsaodir+"/edtwriten", "-c", "%s0%03x"%(chan,dac_offset)])
             print "Set segment %2d offset to %4d"%(seg,offset)
             self.master.update()
-        print "sta3800_offsets done.\n"
+        print "ccd_offsets done.\n"
         self.master.update()
         return
 
-    def sta3800_volts(self):
+    def ccd_volts(self):
         """Python version of the sta3800_volts script"""
-        print "Setting up sta3800 default voltages...\n"
+        print "Setting up ccd default voltages...\n"
         self.master.update()
         self.GetVoltageLookup()
         self.bbias_off()
@@ -882,11 +937,11 @@ class Camera(object):
                 self.master.update()
             time.sleep(0.1)
         self.bbias_on()
-        print "sta3800_volts done.\n"
+        print "ccd_volts done.\n"
         self.master.update()
         return
 
-    def sta3800_channels(self):
+    def ccd_channels(self):
         """Python version of the sta3800_channels script"""
 
         print "Setting up for 16 channel readout...\n"
@@ -910,6 +965,6 @@ class Camera(object):
         self.runcmd([self.edtsaodir+"/edtwriten", "-c", "51000e48"]) #  
         self.runcmd([self.edtsaodir+"/edtwriten", "-c", "51008f4a"])  #
 
-        print "sta3800_channels done.\n"
+        print "ccd_channels done.\n"
         self.master.update()
         return
