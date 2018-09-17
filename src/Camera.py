@@ -32,6 +32,7 @@ class Camera(object):
         self.edtsaodir = eolib.getCfgVal(self.CfgFile,"EDTSAO_DIR")
         self.EDTdir = eolib.getCfgVal(self.CfgFile,"EDT_DIR")
         self.vendor = eolib.getCfgVal(self.CfgFile,"CCD_MANU").strip()
+        self.ccd_sern = eolib.getCfgVal(self.CfgFile,"CCD_SERN").strip()
         if not (self.vendor == "ITL" or self.vendor == "E2V"):
             print "Vendor not recognized.  Exiting."
             sys.exit()
@@ -488,7 +489,7 @@ class Camera(object):
         bias_but_off.grid(row=1,column=3)
 
         self.filter = StringVar()
-        self.filter.set("R")
+        self.filter.set("r")
         filter_type = OptionMenu(self.frame, self.filter, "u", "g", "r", "i", "z", "y")
         filter_type.grid(row=0, column = 0)
         filter_title = Label(self.frame,text="FILTER",relief=RAISED,bd=2,width=12)
@@ -504,7 +505,7 @@ class Camera(object):
         self.sensor_id_ent = Entry(self.frame, justify="center", width=12)
         self.sensor_id_ent.grid(row=4,column=0)
         self.sensor_id_ent.focus_set()
-        self.sensor_id_ent.insert(0,"E2V")
+        self.sensor_id_ent.insert(0,self.ccd_sern)
         sensor_id_title = Label(self.frame,text="Sensor_ID",relief=RAISED,bd=2,width=16)
         sensor_id_title.grid(row=5, column=0)
 
@@ -764,9 +765,10 @@ class Camera(object):
         #print "After expose, time = ",time.time()
         time.sleep(1.0)   # delay for shutter to close all the way?
         #print "Before image16, time = ",time.time()
-        self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16"]) # readout
-        #self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16", "-t", "140000"]) # readout  Allows increased timeout for very slow parallel clock delays
-        #print "After image16, time = ",time.time()
+        if self.vendor == "ITL":
+            self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16"]) # readout
+        elif self.vendor == "E2V":
+            self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "572", "-y", "2048", "-n", "16"]) # readout
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", FlushFile])       # load the signal file to re-start parallel flushing
         #print "After edtwriteblk, time = ",time.time()
         return
@@ -787,7 +789,10 @@ class Camera(object):
         self.runcmd([self.edtsaodir+"/edtwriten", "-c", "50000080"])     # setup for tens of millisecond exposure time
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", NoFlushFile])     # load the signal file to stop parallel flushing
         self.runcmd([self.edtsaodir+"/dark", str(exptime)])            # do the exposure
-        self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16"]) # readout
+        if self.vendor == "ITL":
+            self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "542", "-y", "2022", "-n", "16"]) # readout
+        elif self.vendor == "E2V":
+            self.runcmd([self.edtsaodir+"/image16", "-F", "-f", fitsfilename, "-x", "572", "-y", "2048", "-n", "16"]) # readout
         self.runcmd([self.edtsaodir+"/edtwriteblk", "-f", FlushFile])       # load the signal file to re-start parallel flushing
         return
 

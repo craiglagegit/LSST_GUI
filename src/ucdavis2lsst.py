@@ -157,7 +157,7 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
             phdr.update('PRE_ROWS', 0, 'Prescan rows', after='OVR_COLS')
             phdr.update('IMG_ROWS', 2002, 'Imaging rows', after='PRE_ROWS')
             phdr.update('OVR_ROWS', 46, 'Overscan rows ', after='IMG_ROWS')
-            phdr.update('DETSIZE', '[1:4096,1:4004]', 'NOAO detector size', after='FILENAME')
+            phdr.update('DETSIZE', '[1:4576,1:4096]', 'NOAO detector size', after='FILENAME')
         else :
             print "Not ITL or E2V"
             phdr.update('PRE_COLS', 4, 'Prescan columns', after='BINY')
@@ -175,9 +175,17 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
 
     ###########################################################################
     # fix up the various image extensions
+
     if phdr['CCD_MANU'] == 'ITL' :   
         for i in range(1,17) :
             imhdr=hdulist[i].header
+            imhdr.update('DTV2', 0.0)
+            imhdr.update('DTM1_2', 0.0)
+            imhdr.update('DTM2_1', 0.0)
+            imhdr.update('LTM1_2', 0.0)
+            imhdr.update('LTM2_1', 0.0)
+            imhdr.update('ATM1_2', 0.0)
+            imhdr.update('ATM2_1', 0.0)
 
             if   i == 4 :  
                 extname = 'SEGMENT14'
@@ -232,11 +240,29 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
             imhdr.update('DATASEC', '[4:512,1:2000]')
             imhdr.update('CHANNEL', i, 'channel number', after='BSCALE')    
             imhdr.update('EXTNAME', extname, 'LSST segment identifier', after='CHANNEL')
+            # Calculate LTM and LTV values
+            row = int(extname[7:8])  # first number of extname
+            col = int(extname[8:9])  # second number of extname
+            pre = phdr['PRE_COLS']  # number of pre-columns in segment image
+            xsize = phdr['IMG_COLS']  # number columns in segment image
+            ysize = phdr['IMG_ROWS']  # number rows in segment image        
+
+            imhdr.update('LTM1_1', -1.0, after='ATV2')
+            imhdr.update('LTM2_2', -1.0 + 2.0*row, after='LTM1_1')
+            imhdr.update('LTV1', (col + 1)*xsize + 1 + pre, after='DTV2')
+            imhdr.update('LTV2', (2*ysize +1)*(1 - row), after='LTV1')
 
 
     elif phdr['CCD_MANU'] == 'E2V' :    
         for i in range(1,17) :
             imhdr=hdulist[i].header
+            imhdr.update('DTV2', 0.0)
+            imhdr.update('DTM1_2', 0.0)
+            imhdr.update('DTM2_1', 0.0)
+            imhdr.update('LTM1_2', 0.0)
+            imhdr.update('LTM2_1', 0.0)
+            imhdr.update('ATM1_2', 0.0)
+            imhdr.update('ATM2_1', 0.0)
 
             if   i == 1 :  
                 extname = 'SEGMENT10'
@@ -264,33 +290,44 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
                 imhdr.update('DETSEC', '[4096:3585,4004:2003]')
             elif i == 9 :  
                 extname = 'SEGMENT07'
-                imhdr.update('DETSEC', '[3585:4096,1:2002]')
+                imhdr.update('DETSEC', '[4096:3585,1:2002]')
             elif i == 10 : 
                 extname = 'SEGMENT06'
-                imhdr.update('DETSEC', '[3073:3584,1:2002]')
+                imhdr.update('DETSEC', '[3584:3073,1:2002]')
             elif i == 11 : 
                 extname = 'SEGMENT05'
-                imhdr.update('DETSEC', '[2561:3072,1:2002]')
+                imhdr.update('DETSEC', '[3072:2561,1:2002]')
             elif i == 12 : 
                 extname = 'SEGMENT04'
-                imhdr.update('DETSEC', '[2049:2560,1:2002]')
+                imhdr.update('DETSEC', '[2560:2049,1:2002]')
             elif i == 13 : 
                 extname = 'SEGMENT03'
-                imhdr.update('DETSEC', '[1537:2048,1:2002]')
+                imhdr.update('DETSEC', '[2048:1537,1:2002]')
             elif i == 14 : 
                 extname = 'SEGMENT02'
-                imhdr.update('DETSEC', '[1025:1536,1:2002]')
+                imhdr.update('DETSEC', '[1536:1025,1:2002]')
             elif i == 15 : 
                 extname = 'SEGMENT01'
-                imhdr.update('DETSEC', '[513:1024,1:2002]')
+                imhdr.update('DETSEC', '[1024:513,1:2002]')
             elif i == 16 : 
                 extname = 'SEGMENT00'
-                imhdr.update('DETSEC', '[1:512,1:2002]')
+                imhdr.update('DETSEC', '[512:1,1:2002]')
             else: print "Whoops! That's not a valid extension! "
-            imhdr.update('DETSIZE', '[1:4096,1:4004]')
+            imhdr.update('DETSIZE', '[1:4576,1:4096]')
             imhdr.update('DATASEC', '[11:522,1:2002]')
             imhdr.update('CHANNEL', i, 'channel number', after='BSCALE')    
             imhdr.update('EXTNAME', extname, 'LSST segment identifier', after='CHANNEL')
+            # Calculate LTM and LTV values
+            row = int(extname[7:8])  # first number of extname
+            col = int(extname[8:9])  # second number of extname
+            pre = phdr['PRE_COLS']  # number of pre-columns in segment image
+            xsize = phdr['IMG_COLS']  # number columns in segment image
+            ysize = phdr['IMG_ROWS']  # number rows in segment image        
+
+            imhdr.update('LTM1_1', -1.0, after='ATV2')
+            imhdr.update('LTM2_2', -1.0 + 2.0*row, after='LTM1_1')
+            imhdr.update('LTV1', (col + 1)*xsize + 1 + pre, after='DTV2')
+            imhdr.update('LTV2', (2*ysize +1)*(1 - row), after='LTV1')
 
         data = np.array(hdulist[i].data + 32768, dtype = np.int16)
         # Data is stored as unsigned 16 bit integers, so we need to apply this transformation
@@ -298,26 +335,6 @@ def fix(infile, config_file, sensor_id, masktype, testtype, imagetype, seqnum, e
 
         imhdr.update('AVERAGE', data.mean(), 'Data Mean', after='EXTNAME')
         imhdr.update('STDEV', data.std(), 'Data Std Dev', after='AVERAGE')
-
-        imhdr.update('DTV2', 0.0, after='DTV1')
-        imhdr.update('DTM1_2', 0.0, after='DTM1_1')
-        imhdr.update('DTM2_1', 0.0, after='DTM1_2')
-        imhdr.update('LTM1_2', 0.0, after='LTM1_1')
-        imhdr.update('LTM2_1', 0.0, after='LTM1_2')
-        imhdr.update('ATM1_2', 0.0, after='ATM1_1')
-        imhdr.update('ATM2_1', 0.0, after='ATM1_2')
-
-        # Calculate LTM and LTV values
-	row = int(extname[7:8])  # first number of extname
-	col = int(extname[8:9])  # second number of extname
-        pre = phdr['PRE_COLS']  # number of pre-columns in segment image
-	xsize = phdr['IMG_COLS']  # number columns in segment image
-	ysize = phdr['IMG_ROWS']  # number rows in segment image        
-
-        imhdr.update('LTM1_1', -1.0, after='ATV2')
-        imhdr.update('LTM2_2', -1.0 + 2.0*row, after='LTM1_1')
-        imhdr.update('LTV1', (col + 1)*xsize + 1 + pre, after='DTV2')
-        imhdr.update('LTV2', (2*ysize +1)*(1 - row), after='LTV1')
 
         imhdr.update('DETECTOR', ccd_sern)
         imhdr.update('CHECKSUM', 0, 'file checksum', after='ATM2_2')
