@@ -17,3 +17,5 @@ A screenshot of the code in operation is shown at LSST_GUI_Screenshot_16Nov16.pn
 
 For questions contact Craig Lage at cslage@ucdavis.edu
 
+Acknowledgements:
+This research was supported by DOE grant DE-SC0009999 and NSF/AURA grant N56981C.
